@@ -24,19 +24,31 @@ const uuidv1 = require('uuidv1')
   router.get("/notes", (req, res) => {
    res.json(db)
 });
+router.get('/notes/:id', (req, res) => {
+  res.json(req.params.id)
+  console.log(req.params)
+  console.log('-----',req.params.id)
+
+  // res.json(db)
+});
 
 router.delete('/notes', function (req, res) {
     res.send('DELETE request to homepage')
   })
 
-router.post("/notes", (req, res) => {
+router.post('/notes', (req, res) => {
     console.log("POST request made to /api/notes")
     console.log(req.body)
 
     // read-and-save the current contents of db.json
-    fs.readFile(path.join(__dirname, "../../db/db.json"), "utf-8", (err, string)=>{
+    fs.readFile(path.join(__dirname, "../../db/db.json"), (err, string)=>{
       if(err){console.error(err)}
       var savedArray = JSON.parse(string)
+
+    // savedArray.id = body.length.id
+    savedArray.forEach((item, i) => {
+      item.id = i + 1;
+    });
 
       console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
       console.log("current contents of db.json")
@@ -52,8 +64,9 @@ console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
       fs.writeFileSync(
         path.join(__dirname, "../../db/db.json"),
         JSON.stringify( savedArray, null, 2),
-        savedArray.id = {id:uuidv1()},
-        console.log(savedArray.id)
+        // req.body.id = {id:uuidv1()},
+        // console.log(req.body.id),
+        // console.log({id:uuidv1()})
       );
 
       res.status(201).send(savedArray);
