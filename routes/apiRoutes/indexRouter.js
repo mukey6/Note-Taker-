@@ -1,92 +1,43 @@
 const path = require("path");
 const router = require("express").Router();
-const db = require("../../db/db.json");
+let db = require("../../db/db.json");
 const fs = require("fs");
-const uuidv1 = require('uuidv1')
+const req = require("express/lib/request");
 
-
-// function createNewNote( notes) {
-//     fs.writeFileSync(
-//       path.join(__dirname, "../../db/db.json"),
-//       JSON.stringify( notes, null, 2)
-//     );
-// // notes.push(db)
-
-//     // notes.id = {id:uuidv1}
-//     // console.log(notes.id = {id:uuidv1()})
-//     // console.log(notes.id)
-
-//     return notes;
-
-//   }
-  
-
-  router.get("/notes", (req, res) => {
-   res.json(db)
-});
-router.get('/notes/:id', (req, res) => {
-  res.json(req.params.id)
-  console.log(req.params)
-  console.log('-----',req.params.id)
-
-  // res.json(db)
+router.get("/notes", (req, res) => {
+  res.json(db);
 });
 
-router.delete('/notes', function (req, res) {
-    res.send('DELETE request to homepage')
-  })
+router.get("/notes/:id", (req, res) => {
+  // '+' turns req.params.id to #
+  const noteId = +req.params.id;
+  const foundNote = db.filter((note) => noteId === note.id);
+  res.status(200).send(foundNote);
+});
 
-router.post('/notes', (req, res) => {
-    console.log("POST request made to /api/notes")
-    console.log(req.body)
+router.delete("/notes/:id", function (req, res) {
+  const noteId = +req.params.id;
+  const newDb = db.filter((note) => noteId !== note.id);
+  db = newDb
 
-    // read-and-save the current contents of db.json
-    fs.readFile(path.join(__dirname, "../../db/db.json"), (err, string)=>{
-      if(err){console.error(err)}
-      var savedArray = JSON.parse(string)
+  fs.writeFileSync(
+    path.join(__dirname, "../../db/db.json"),
+    JSON.stringify(db, null, 2)
+  );
+  res.status(202).send("DELETE request to homepage")
+});
 
-    // savedArray.id = body.length.id
-    savedArray.forEach((item, i) => {
-      item.id = i + 1;
-    });
-
-      console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-      console.log("current contents of db.json")
-      console.log(savedArray)
-
-      //add a new note into savedArray
-      // pushing from savedArray into db.json or vice versa?
-savedArray.push(req.body)
-console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-
-      //new array into db.json
-      // should i pass savedArray or json in the function?
-      fs.writeFileSync(
-        path.join(__dirname, "../../db/db.json"),
-        JSON.stringify( savedArray, null, 2),
-        // req.body.id = {id:uuidv1()},
-        // console.log(req.body.id),
-        // console.log({id:uuidv1()})
-      );
-
-      res.status(201).send(savedArray);
-    })
+router.post("/notes", (req, res) => {
+  db.push(req.body);
+  db.forEach((item, i) => {
+    item.id = i + 1;
   });
 
+  fs.writeFileSync(
+    path.join(__dirname, "../../db/db.json"),
+    JSON.stringify(db, null, 2)
+  );
+  res.status(201).send(db);
+});
 
 module.exports = router;
-
-
-// router.get("/notes", (req, res) => {
-//     let notes = db
-//     res.json(notes)
-// });
-
-// router.post("/notes", (req, res) => {
-//     createNewNote(req.body)
-//     // saveNote(req.body) 
-//     // console.log(saveNote)
-//     res.status(201).send(req.body);
-//     console.log('req' , req.body)
-
-//   });
