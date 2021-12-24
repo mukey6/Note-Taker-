@@ -182,8 +182,3 @@ if (window.location.pathname === '/notes') {
 
 getAndRenderNotes();
 
-// module.exports={
-//   saveNote
-// }
-
-// export function saveNote()
